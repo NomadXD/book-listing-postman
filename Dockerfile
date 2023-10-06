@@ -1,21 +1,15 @@
-# Use the Postman/Newman image as the base image
-FROM node:18-alpine
+# Use the official Nginx image as the base image
+FROM nginx
 
-# Create a directory for Newman collections
-RUN mkdir /etc/postman
+# Optional: Set a label to provide some metadata
+LABEL maintainer="your-name@example.com"
 
-# Copy all Postman collection files to the container
-COPY postman-collection-dir/*.json /etc/postman/
+# Optional: Copy custom Nginx configuration files (if needed)
+# COPY nginx.conf /etc/nginx/nginx.conf
+# COPY custom-site.conf /etc/nginx/conf.d/custom-site.conf
 
-# Install newman cli
-RUN npm i -g newman -y
-
-# Create a script to run all collections in the directory
-RUN echo '#!/bin/sh' >> /etc/run-collections.sh && \
-    echo 'for file in /etc/postman/*.json; do' >> /etc/run-collections.sh && \
-    echo '  newman run "$file";' >> /etc/run-collections.sh && \
-    echo 'done' >> /etc/run-collections.sh && \
-    chmod +x /etc/run-collections.sh
+# Expose port 80 to allow incoming HTTP traffic
+EXPOSE 80
 
 RUN adduser \
     --disabled-password \
@@ -28,6 +22,5 @@ RUN adduser \
 # Use the above created unprivileged user
 USER 10014
 
-# Run the script when the container starts
-CMD ["/etc/run-collections.sh"]
-
+# Start the Nginx web server when a container based on this image is started
+CMD ["nginx", "-g", "daemon off;"]
